@@ -11,7 +11,7 @@ This is a README for the AWS-Scripts-Terraform folder.
 | **Message**    | Présenter/documenter un tutoriel et les résultats du déploiement du serveur **Vaultwarden** sur AWS à l’aide des scripts Terraform.  |
 | **Récepteur**  | M. Jérémy Massinon     |
 | **Canal**      | GitLab   |
-| **Code**       | Français                                                                                                                                                                                                                                                                                                                                                            |
+| **Code**       | Français                                                       |
 | **Références** | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) · [Terraform](https://developer.hashicorp.com/terraform/docs) · [AWS EC2 Docs](https://docs.aws.amazon.com/fr_fr/ec2/) · [AWS VPC Docs](https://docs.aws.amazon.com/vpc/) · |
 
 -----
