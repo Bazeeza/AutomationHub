@@ -1,4 +1,4 @@
-# CISCO-Scripts-ClaudeIA
+# ClaudeIA-Scripts
 
 
 # TP Finale – Guide/Tuto Déploiement Desktop
