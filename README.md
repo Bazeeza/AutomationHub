@@ -1,4 +1,4 @@
-# AutomationHub
+.# AutomationHub
 
 # Déploiement .....
 **Auteur But et Schéma planification**
@@ -49,7 +49,7 @@ for svc in afkbot5m shadow5m shadow_eth_5m shadow_sol_5m afkbot; do
     printf "  %-18s %-10s enabled:%s\n" "$svc" "$status" "$enabled"
 done
 
-echo ""
+echoo ""
 echo "── 2. COMPILE CHECKS ──"
 cd ~/afk_bot_5m && source venv/bin/activate
 python -m py_compile main_5m.py execution/order_manager.py core/kelly.py notifications/telegram_5m.py 2>&1 && echo "afk_bot_5m: OK"
