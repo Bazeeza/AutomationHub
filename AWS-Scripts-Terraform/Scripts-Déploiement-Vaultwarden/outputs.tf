@@ -14,3 +14,4 @@ output "instance_id" {
   value = aws_instance.bitwarden_server.id
   description = "ID de l'instance EC2"
 }
+
