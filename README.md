@@ -37,7 +37,6 @@ Avant de commencer, il faut :
 - des notes
 
 
-
 echo "════════════════════════════════════════════════════════════"
 echo "  MASTER DIAGNOSTIC — $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 echo "════════════════════════════════════════════════════════════"
