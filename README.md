@@ -1,4 +1,4 @@
-# AutomationHub
+.# AutomationHub
 
 # Déploiement .....
 **Auteur But et Schéma planification**
@@ -30,7 +30,3 @@ Avant de commencer, il faut :
 ### C’est quoi Vaultwarden ?
 
  D’abord, **Vaultwarden** est un gestionnaire de mots de passe (un *vault*) qui permet de garder de façon sécurisée :
-
-- des mots de passe  
-- des identifiants  
-- des notes sécurisées  
