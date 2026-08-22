@@ -126,6 +126,6 @@ terraform destroy
 
 ## Auteur
 
-**Abdul-Bariu Ishola Azeez**
+**Abdul-Bariu Azeez**
 Technicien en réseautique et télécommunication — Montréal, QC
 Portfolio : [bazeeza.github.io](https://bazeeza.github.io) · GitHub : [@Bazeeza](https://github.com/Bazeeza)
