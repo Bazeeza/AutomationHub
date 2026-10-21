@@ -11,7 +11,7 @@ Ce dépôt regroupe les scripts d'infrastructure as code (IaC) permettant de pro
 | Élément | Contenu |
 |---|---|
 | **Objet** | Guide de déploiement d'un serveur **Vaultwarden** (gestionnaire de mots de passe compatible Bitwarden, écrit en Rust) hébergé sur AWS |
-| **Équipe** | Abdul-Bariu Ishola Azeez · Abdul-Majid · Aran |
+| **Équipe** | Bariu Azeez · Abdul-Majid · Aran |
 | **Objectif** | Documenter le déploiement complet du serveur Vaultwarden sur AWS au moyen de scripts Terraform, puis présenter les résultats obtenus |
 | **Cadre** | Projet réalisé dans le cadre du DEC en Techniques de l'informatique (Réseautique), Collège de Rosemont |
 | **Langue** | Français |
@@ -126,6 +126,6 @@ terraform destroy
 
 ## Auteur
 
-**Abdul-Bariu Azeez**
+**Bariu Azeez**
 Technicien en réseautique et télécommunication — Montréal, QC
 Portfolio : [bazeeza.github.io](https://bazeeza.github.io) · GitHub : [@Bazeeza](https://github.com/Bazeeza)
