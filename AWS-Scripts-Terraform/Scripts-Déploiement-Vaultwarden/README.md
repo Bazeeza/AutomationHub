@@ -1,11 +1,24 @@
-# AWS-Scripts-Terraform
+# Scripts-Déploiement-Vaultwarden
 
-This is a README for the AWS-Scripts-Terraform folder.
-# Travail Pratique 3 – Guide/Tuto Déploiement Ubuntu Desktop
-**Auteur But et Schéma planification**
+> **EN —** Terraform configuration that builds a VPC, a public subnet, a security group, an Ubuntu EC2 instance and an Elastic IP on AWS, then installs Docker, Vaultwarden and Caddy (automatic HTTPS) through `user_data`. The step-by-step guide below is in French.
+
+## Contenu du dossier
+
+| Fichier | Rôle |
+|---|---|
+| [`versions.tf`](versions.tf) | Version minimale de Terraform, fournisseur `hashicorp/aws` (~> 5.0) et région du fournisseur |
+| [`variables.tf`](variables.tf) | Variables d'entrée : `aws_region` (défaut `us-east-1`) et `domain_name` (obligatoire) |
+| [`main.tf`](main.tf) | Ressources : AMI Ubuntu 22.04, VPC, sous-réseau public, passerelle Internet, table de routage, ACL réseau, groupe de sécurité, instance EC2 avec script d'installation, Elastic IP |
+| [`outputs.tf`](outputs.tf) | Sorties : IP publique (Elastic IP), URL HTTPS, ID de l'instance |
+| [`terraform.tfvars.example`](terraform.tfvars.example) | Exemple de valeurs à copier dans `terraform.tfvars` (fichier exclu du dépôt) |
+
+---
+
+# Travail Pratique 3 – Guide de déploiement Vaultwarden sur AWS
+**Auteur, but et planification**
 
 | Élément        | Contenu                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------- | ------------------------------- |
 | **Référent**   | Guide de déploiement d’un serveur **Vaultwarden** (serveur compatible Bitwarden écrit en Rust) hébergé sur **AWS** |
 | **Émetteur**   | **Bariu Azeez – Abdul-Majid – Aran** |
 | **Message**    | Présenter/documenter un tutoriel et les résultats du déploiement du serveur **Vaultwarden** sur AWS à l’aide des scripts Terraform.  |
@@ -23,7 +36,7 @@ Avant de commencer, il faut :
 - Un compte AWS functionelle avec les droits pour créer VPC, EC2, Elastic IP, etc.
 - Un nom de domaine ou une zone DNS configuré
 - Une machine Ubuntu avec accès Internet
-- Votre script terraform qui est dans le répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy 
+- Les fichiers Terraform de ce dossier (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`), à l'origine dans le dépôt GitLab du cours
 
 -----
 
@@ -51,7 +64,47 @@ Dans le cadre de ce travail pratique, on déploie Vaultwarden sur AWS à l’aid
 
 ### Schéma globale du Déploiement
 
-    Les scripts Terraform s'est trouve dans le répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy
+Les scripts Terraform qui produisent ce déploiement sont dans ce dossier (voir [Contenu du dossier](#contenu-du-dossier)). Le schéma ci-dessous reprend les ressources déclarées dans `main.tf` :
+
+```mermaid
+flowchart TB
+    user["Client Bitwarden ou navigateur"]
+    dns["DNS : domain_name vers l'Elastic IP"]
+
+    subgraph aws["AWS - région var.aws_region"]
+        eip["Elastic IP bitwarden-eip"]
+        subgraph vpc["VPC bitwarden-vpc - 10.0.0.0/16"]
+            igw["Internet Gateway bitwarden-igw"]
+            rt["Table de routage bitwarden-public-rt : 0.0.0.0/0 vers IGW"]
+            subgraph subnet["Sous-réseau public 10.0.1.0/24 - zone var.aws_region + a"]
+                sg["Groupe de sécurité bitwarden-sg : entrée TCP 22, 80, 443"]
+                subgraph ec2["EC2 Ubuntu 22.04 - t2.micro"]
+                    caddy["Caddy : HTTPS automatique, redirection HTTP vers HTTPS"]
+                    docker["Docker"]
+                    vw["Conteneur vaultwarden/server : port 8000, volume /bw-data"]
+                end
+            end
+        end
+    end
+
+    user --> dns --> eip --> igw
+    igw --- rt
+    igw --> sg --> caddy
+    caddy -->|"reverse_proxy localhost:8000"| vw
+    docker --- vw
+
+    classDef ext fill:#070d1c,stroke:#2b9dff,color:#e6edf3
+    classDef net fill:#070d1c,stroke:#3fe0a0,color:#e6edf3
+    classDef sec fill:#070d1c,stroke:#ffb454,color:#e6edf3
+    classDef app fill:#070d1c,stroke:#c792ea,color:#e6edf3
+    class user,dns,eip ext
+    class igw,rt net
+    class sg sec
+    class caddy,docker,vw app
+```
+
+Schéma de planification réalisé pendant le travail pratique :
+
 ----
 ![Capture 56](https://i.postimg.cc/3wHBMVRT/Screenshot-2025-11-18-at-8-15-03-PM.png)  
 
@@ -141,7 +194,7 @@ terraform -version
 
 Donc ici cette phase sert à copier les script et par la suite lancer le déploiement à partir des scripts Terraform déjà présents dans le repotoire.
 
-1. **Aller dans git est copier tout les fichier et éléments du répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy**
+1. **Récupérer les fichiers `.tf` de ce dossier (clonage du dépôt ou copie)**
 2. **Aller dans le terminal de ubuntu et créer le dossier Terraform**
 3. **Créer et coller dans chaque fichier créer les éléments du scripts-terraform**
 ```
@@ -154,6 +207,12 @@ mkdir ~/terraform
 ---
 ![Capture 10](https://i.postimg.cc/m24vTX6J/Screenshot-2025-11-18-at-6-30-10-PM.png)  
 ---
+
+**Renseigner les variables** : copier l'exemple puis remplacer `domain_name` par votre nom de domaine. Le fichier `terraform.tfvars` est exclu du dépôt par le `.gitignore`.
+```
+cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars
+```
 
 **Initialiser Terraform** : Cette commande télécharge les plugins soit chez AWS ou bien tout ce qui est nécessaire et prépare le dossier.
 ```
@@ -219,14 +278,17 @@ terraform destroy
 
 ### Phase 3 - Tests de fonctionnement
 
+> [!NOTE]
+> Les identifiants AWS (`vpc-…`, `subnet-…`, `sg-…`, `i-…`), l'adresse IP publique et le nom de domaine du laboratoire ont été remplacés par des valeurs génériques entre `< >`. Ces valeurs ne servent qu'à un déploiement donné : chaque nouveau déploiement produit ses propres valeurs (voir les sorties `terraform output`).
+
 **Configuration du VPC**
 
-* **VPC** : `vpc-049347764302a4881` (`bitwarden-vpc`)
+* **VPC** : `<vpc-id>` (`bitwarden-vpc`)
 * **CIDR IPv4** : `10.0.0.0/16`
-* **Sous-réseau public** : `subnet-0ae2a012b3571f91a` (`bitwarden-public-subnet`) en **us-east-1a**
+* **Sous-réseau public** : `<subnet-id>` (`bitwarden-public-subnet`) en **us-east-1a**
 * **Passerelle Internet** : `bitwarden-igw` reliée au VPC
 * **Table de routage publique** : `bitwarden-public-rt` avec une route `0.0.0.0/0` vers l’Internet Gateway
-* **Groupe de sécurité associé à l’instance** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **Groupe de sécurité associé à l’instance** : `<sg-id>` (`bitwarden-sg`)
 ------
 - En Bref
 - Internet = vers ports 80/443 du **bitwarden-sg**
@@ -237,16 +299,16 @@ terraform destroy
 **Instance EC2 Vaultwarden**
 
 * **Nom de l’instance** : `Vaultwarden-Server`
-* **ID de l’instance** : `i-0fc11d6b791f8e63f`
+* **ID de l’instance** : `<instance-id>`
 * **Région / Zone de dispo** : `us-east-1` – `us-east-1a`
 * **Type d’instance EC2** : `t2.micro`
-* **VPC** : `vpc-049347764302a4881` (`bitwarden-vpc`)
-* **Sous-réseau** : `subnet-0ae2a012b3571f91a` (`bitwarden-public-subnet`)
-* **Adresse IP privée** : `10.0.1.35`
-* **Adresse IPv4 publique / Elastic IP** : `3.213.60.70` (`bitwarden-eip`)
-* **DNS public EC2** : `ec2-3-213-60-70.compute-1.amazonaws.com`
-* **Nom de domaine utilisé pour l’appli** : `vault-tp3-faaaaaa.duckdns.org` (DuckDNS, pointe vers `3.213.60.70`)
-* **Groupe de sécurité attaché** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **VPC** : `<vpc-id>` (`bitwarden-vpc`)
+* **Sous-réseau** : `<subnet-id>` (`bitwarden-public-subnet`)
+* **Adresse IP privée** : une adresse de `10.0.1.0/24` attribuée par AWS
+* **Adresse IPv4 publique / Elastic IP** : `<elastic-ip>` (`bitwarden-eip`)
+* **DNS public EC2** : `ec2-<elastic-ip>.compute-1.amazonaws.com`
+* **Nom de domaine utilisé pour l’appli** : `<domain_name>` (DuckDNS, pointe vers `<elastic-ip>`)
+* **Groupe de sécurité attaché** : `<sg-id>` (`bitwarden-sg`)
 * **Ports exposés publiquement** :
   * **22/TCP** : SSH (administration)
   * **80/TCP** : HTTP (redirection vers HTTPS par Caddy)
@@ -254,7 +316,7 @@ terraform destroy
 ----
 ![Capture 18](https://i.postimg.cc/jdTpRgFn/Screenshot-2025-11-18-at-6-47-14-PM.png)  
 ----
-* **Groupe de sécurité attaché** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **Groupe de sécurité attaché** : `<sg-id>` (`bitwarden-sg`)
 ----
 ![Capture 19](https://i.postimg.cc/MKYhH7C6/Screenshot-2025-11-18-at-6-47-31-PM.png)  
 ----

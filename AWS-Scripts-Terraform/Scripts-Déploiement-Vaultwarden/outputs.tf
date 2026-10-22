@@ -6,7 +6,7 @@ output "bitwarden_public_ip" {
 }
 
 output "bitwarden_url" {
-  value = "https://vault-tp3-faaa.duckdns.org"
+  value = "https://${var.domain_name}"
   description = "URL finale du serveur Bitwarden en HTTPS"
 }
 
