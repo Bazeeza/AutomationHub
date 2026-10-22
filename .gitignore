@@ -1,0 +1,40 @@
+# Terraform working directory (providers and modules downloaded by `terraform init`)
+**/.terraform/
+
+# State files: they contain resource IDs, public IPs and sometimes secrets in clear text
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variable files hold environment-specific values; only the documented example is published
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Local overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Saved plans may embed sensitive values
+*.tfplan
+tfplan
+
+# CLI configuration
+.terraformrc
+terraform.rc
+
+# Environment files and credentials
+.env
+.env.*
+*.pem
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
