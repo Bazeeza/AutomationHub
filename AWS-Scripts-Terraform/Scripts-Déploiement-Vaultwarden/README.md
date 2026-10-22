@@ -219,14 +219,17 @@ terraform destroy
 
 ### Phase 3 - Tests de fonctionnement
 
+> [!NOTE]
+> Les identifiants AWS (`vpc-…`, `subnet-…`, `sg-…`, `i-…`), l'adresse IP publique et le nom de domaine du laboratoire ont été remplacés par des valeurs génériques entre `< >`. Ces valeurs ne servent qu'à un déploiement donné : chaque nouveau déploiement produit ses propres valeurs (voir les sorties `terraform output`).
+
 **Configuration du VPC**
 
-* **VPC** : `vpc-049347764302a4881` (`bitwarden-vpc`)
+* **VPC** : `<vpc-id>` (`bitwarden-vpc`)
 * **CIDR IPv4** : `10.0.0.0/16`
-* **Sous-réseau public** : `subnet-0ae2a012b3571f91a` (`bitwarden-public-subnet`) en **us-east-1a**
+* **Sous-réseau public** : `<subnet-id>` (`bitwarden-public-subnet`) en **us-east-1a**
 * **Passerelle Internet** : `bitwarden-igw` reliée au VPC
 * **Table de routage publique** : `bitwarden-public-rt` avec une route `0.0.0.0/0` vers l’Internet Gateway
-* **Groupe de sécurité associé à l’instance** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **Groupe de sécurité associé à l’instance** : `<sg-id>` (`bitwarden-sg`)
 ------
 - En Bref
 - Internet = vers ports 80/443 du **bitwarden-sg**
@@ -237,16 +240,16 @@ terraform destroy
 **Instance EC2 Vaultwarden**
 
 * **Nom de l’instance** : `Vaultwarden-Server`
-* **ID de l’instance** : `i-0fc11d6b791f8e63f`
+* **ID de l’instance** : `<instance-id>`
 * **Région / Zone de dispo** : `us-east-1` – `us-east-1a`
 * **Type d’instance EC2** : `t2.micro`
-* **VPC** : `vpc-049347764302a4881` (`bitwarden-vpc`)
-* **Sous-réseau** : `subnet-0ae2a012b3571f91a` (`bitwarden-public-subnet`)
-* **Adresse IP privée** : `10.0.1.35`
-* **Adresse IPv4 publique / Elastic IP** : `3.213.60.70` (`bitwarden-eip`)
-* **DNS public EC2** : `ec2-3-213-60-70.compute-1.amazonaws.com`
-* **Nom de domaine utilisé pour l’appli** : `vault-tp3-faaaaaa.duckdns.org` (DuckDNS, pointe vers `3.213.60.70`)
-* **Groupe de sécurité attaché** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **VPC** : `<vpc-id>` (`bitwarden-vpc`)
+* **Sous-réseau** : `<subnet-id>` (`bitwarden-public-subnet`)
+* **Adresse IP privée** : une adresse de `10.0.1.0/24` attribuée par AWS
+* **Adresse IPv4 publique / Elastic IP** : `<elastic-ip>` (`bitwarden-eip`)
+* **DNS public EC2** : `ec2-<elastic-ip>.compute-1.amazonaws.com`
+* **Nom de domaine utilisé pour l’appli** : `<domain_name>` (DuckDNS, pointe vers `<elastic-ip>`)
+* **Groupe de sécurité attaché** : `<sg-id>` (`bitwarden-sg`)
 * **Ports exposés publiquement** :
   * **22/TCP** : SSH (administration)
   * **80/TCP** : HTTP (redirection vers HTTPS par Caddy)
@@ -254,7 +257,7 @@ terraform destroy
 ----
 ![Capture 18](https://i.postimg.cc/jdTpRgFn/Screenshot-2025-11-18-at-6-47-14-PM.png)  
 ----
-* **Groupe de sécurité attaché** : `sg-0ca760bcf26bdcc8e` (`bitwarden-sg`)
+* **Groupe de sécurité attaché** : `<sg-id>` (`bitwarden-sg`)
 ----
 ![Capture 19](https://i.postimg.cc/MKYhH7C6/Screenshot-2025-11-18-at-6-47-31-PM.png)  
 ----
