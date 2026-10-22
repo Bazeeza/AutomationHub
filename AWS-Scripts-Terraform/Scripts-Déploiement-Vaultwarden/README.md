@@ -1,11 +1,24 @@
-# AWS-Scripts-Terraform
+# Scripts-Déploiement-Vaultwarden
 
-This is a README for the AWS-Scripts-Terraform folder.
-# Travail Pratique 3 – Guide/Tuto Déploiement Ubuntu Desktop
-**Auteur But et Schéma planification**
+> **EN —** Terraform configuration that builds a VPC, a public subnet, a security group, an Ubuntu EC2 instance and an Elastic IP on AWS, then installs Docker, Vaultwarden and Caddy (automatic HTTPS) through `user_data`. The step-by-step guide below is in French.
+
+## Contenu du dossier
+
+| Fichier | Rôle |
+|---|---|
+| [`versions.tf`](versions.tf) | Version minimale de Terraform, fournisseur `hashicorp/aws` (~> 5.0) et région du fournisseur |
+| [`variables.tf`](variables.tf) | Variables d'entrée : `aws_region` (défaut `us-east-1`) et `domain_name` (obligatoire) |
+| [`main.tf`](main.tf) | Ressources : AMI Ubuntu 22.04, VPC, sous-réseau public, passerelle Internet, table de routage, ACL réseau, groupe de sécurité, instance EC2 avec script d'installation, Elastic IP |
+| [`outputs.tf`](outputs.tf) | Sorties : IP publique (Elastic IP), URL HTTPS, ID de l'instance |
+| [`terraform.tfvars.example`](terraform.tfvars.example) | Exemple de valeurs à copier dans `terraform.tfvars` (fichier exclu du dépôt) |
+
+---
+
+# Travail Pratique 3 – Guide de déploiement Vaultwarden sur AWS
+**Auteur, but et planification**
 
 | Élément        | Contenu                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------- | ------------------------------- |
 | **Référent**   | Guide de déploiement d’un serveur **Vaultwarden** (serveur compatible Bitwarden écrit en Rust) hébergé sur **AWS** |
 | **Émetteur**   | **Bariu Azeez – Abdul-Majid – Aran** |
 | **Message**    | Présenter/documenter un tutoriel et les résultats du déploiement du serveur **Vaultwarden** sur AWS à l’aide des scripts Terraform.  |
@@ -23,7 +36,7 @@ Avant de commencer, il faut :
 - Un compte AWS functionelle avec les droits pour créer VPC, EC2, Elastic IP, etc.
 - Un nom de domaine ou une zone DNS configuré
 - Une machine Ubuntu avec accès Internet
-- Votre script terraform qui est dans le répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy 
+- Les fichiers Terraform de ce dossier (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`), à l'origine dans le dépôt GitLab du cours
 
 -----
 
@@ -51,7 +64,10 @@ Dans le cadre de ce travail pratique, on déploie Vaultwarden sur AWS à l’aid
 
 ### Schéma globale du Déploiement
 
-    Les scripts Terraform s'est trouve dans le répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy
+Les scripts Terraform qui produisent ce déploiement sont dans ce dossier (voir [Contenu du dossier](#contenu-du-dossier)).
+
+Schéma de planification réalisé pendant le travail pratique :
+
 ----
 ![Capture 56](https://i.postimg.cc/3wHBMVRT/Screenshot-2025-11-18-at-8-15-03-PM.png)  
 
@@ -141,7 +157,7 @@ terraform -version
 
 Donc ici cette phase sert à copier les script et par la suite lancer le déploiement à partir des scripts Terraform déjà présents dans le repotoire.
 
-1. **Aller dans git est copier tout les fichier et éléments du répertoire Scripts-Terraform du projets git-lab H73-A25-TP3-Abdul_Aran_Azeez_Freddy**
+1. **Récupérer les fichiers `.tf` de ce dossier (clonage du dépôt ou copie)**
 2. **Aller dans le terminal de ubuntu et créer le dossier Terraform**
 3. **Créer et coller dans chaque fichier créer les éléments du scripts-terraform**
 ```
@@ -154,6 +170,12 @@ mkdir ~/terraform
 ---
 ![Capture 10](https://i.postimg.cc/m24vTX6J/Screenshot-2025-11-18-at-6-30-10-PM.png)  
 ---
+
+**Renseigner les variables** : copier l'exemple puis remplacer `domain_name` par votre nom de domaine. Le fichier `terraform.tfvars` est exclu du dépôt par le `.gitignore`.
+```
+cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars
+```
 
 **Initialiser Terraform** : Cette commande télécharge les plugins soit chez AWS ou bien tout ce qui est nécessaire et prépare le dossier.
 ```
