@@ -64,7 +64,44 @@ Dans le cadre de ce travail pratique, on déploie Vaultwarden sur AWS à l’aid
 
 ### Schéma globale du Déploiement
 
-Les scripts Terraform qui produisent ce déploiement sont dans ce dossier (voir [Contenu du dossier](#contenu-du-dossier)).
+Les scripts Terraform qui produisent ce déploiement sont dans ce dossier (voir [Contenu du dossier](#contenu-du-dossier)). Le schéma ci-dessous reprend les ressources déclarées dans `main.tf` :
+
+```mermaid
+flowchart TB
+    user["Client Bitwarden ou navigateur"]
+    dns["DNS : domain_name vers l'Elastic IP"]
+
+    subgraph aws["AWS - région var.aws_region"]
+        eip["Elastic IP bitwarden-eip"]
+        subgraph vpc["VPC bitwarden-vpc - 10.0.0.0/16"]
+            igw["Internet Gateway bitwarden-igw"]
+            rt["Table de routage bitwarden-public-rt : 0.0.0.0/0 vers IGW"]
+            subgraph subnet["Sous-réseau public 10.0.1.0/24 - zone var.aws_region + a"]
+                sg["Groupe de sécurité bitwarden-sg : entrée TCP 22, 80, 443"]
+                subgraph ec2["EC2 Ubuntu 22.04 - t2.micro"]
+                    caddy["Caddy : HTTPS automatique, redirection HTTP vers HTTPS"]
+                    docker["Docker"]
+                    vw["Conteneur vaultwarden/server : port 8000, volume /bw-data"]
+                end
+            end
+        end
+    end
+
+    user --> dns --> eip --> igw
+    igw --- rt
+    igw --> sg --> caddy
+    caddy -->|"reverse_proxy localhost:8000"| vw
+    docker --- vw
+
+    classDef ext fill:#070d1c,stroke:#2b9dff,color:#e6edf3
+    classDef net fill:#070d1c,stroke:#3fe0a0,color:#e6edf3
+    classDef sec fill:#070d1c,stroke:#ffb454,color:#e6edf3
+    classDef app fill:#070d1c,stroke:#c792ea,color:#e6edf3
+    class user,dns,eip ext
+    class igw,rt net
+    class sg sec
+    class caddy,docker,vw app
+```
 
 Schéma de planification réalisé pendant le travail pratique :
 
