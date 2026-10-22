@@ -189,12 +189,12 @@ resource "aws_instance" "bitwarden_server" {
     curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
     apt update -y
     apt install -y caddy
-    # Caddyfile avec ton domaine et redirect HTTP->HTTPS
+    # Caddyfile avec le domaine (var.domain_name) et redirect HTTP->HTTPS
     cat > /etc/caddy/Caddyfile <<'EOC'
     http:// {
         redir https://{host}{uri}
     }
-    vault-tp3-faaa.duckdns.org {
+    ${var.domain_name} {
         reverse_proxy localhost:8000
         tls {
             on_demand
@@ -203,7 +203,7 @@ resource "aws_instance" "bitwarden_server" {
     EOC
     systemctl restart caddy
     systemctl enable caddy
-    echo "Vaultwarden prêt sur https://vault-tp3-faaa.duckdns.org" > /var/log/vaultwarden.log
+    echo "Vaultwarden prêt sur https://${var.domain_name}" > /var/log/vaultwarden.log
     EOF
   )
 }
