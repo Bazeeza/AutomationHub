@@ -1,0 +1,16 @@
+# terraform.tfvars.example
+# Copy this file to terraform.tfvars and adjust the values:
+#   cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars is ignored by git (.gitignore): never commit the real file.
+# Every variable below is declared in variables.tf.
+
+# AWS region where the VPC, subnet, EC2 instance and Elastic IP are created.
+# The subnet is placed in the "<region>a" availability zone.
+# Optional - default: "us-east-1"
+aws_region = "us-east-1"
+
+# Fully qualified domain name served by Caddy (automatic HTTPS certificate).
+# Create the DNS record (for example on DuckDNS) and point it to the Elastic IP
+# shown in the bitwarden_public_ip output after `terraform apply`.
+# Required - no default.
+domain_name = "vault.example.duckdns.org"
