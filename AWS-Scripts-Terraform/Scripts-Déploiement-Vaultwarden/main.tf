@@ -161,6 +161,13 @@ resource "aws_instance" "bitwarden_server" {
     http_put_response_hop_limit = 1
   }
 
+  # Volume racine chiffré au repos (clé gérée par AWS, aws/ebs) : il contient /bw-data,
+  # donc la base de données du coffre Vaultwarden.
+  root_block_device {
+    encrypted             = true
+    delete_on_termination = true
+  }
+
   tags = {
     Name        = "Vaultwarden-Server"
     Project     = "TP3-Bitwarden"
