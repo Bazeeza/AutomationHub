@@ -13,7 +13,9 @@ Le script `user_data` exécuté au premier démarrage de l'instance :
 |---|---|
 | Installer Docker | `apt install -y docker.io` puis `systemctl enable --now docker` |
 | Créer le dossier persistant | `mkdir -p /bw-data` |
-| Lancer Vaultwarden | `docker run -d --name vaultwarden -v /bw-data/:/data/ -e ROCKET_PORT=8000 -p 8000:8000 vaultwarden/server:latest` |
+| Lancer Vaultwarden | `docker run -d --name vaultwarden --restart unless-stopped -v /bw-data/:/data/ -e ROCKET_PORT=8000 -p 127.0.0.1:8000:8000 ${var.vaultwarden_image}` |
 | Publier en HTTPS | Caddy, `reverse_proxy localhost:8000` sur `var.domain_name` |
+
+Le port 8000 n'est publié que sur `127.0.0.1` : le conteneur n'est joignable que par Caddy, sur la même machine. `--restart unless-stopped` relance le conteneur après un redémarrage de l'instance. L'image est fixée par la variable `vaultwarden_image` (version épinglée, jamais `:latest`).
 
 Il n'y a donc **rien à lancer dans ce dossier** : un seul `terraform apply` dans `Scripts-Déploiement-Vaultwarden` crée l'infrastructure et démarre le conteneur.

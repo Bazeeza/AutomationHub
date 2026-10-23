@@ -194,12 +194,14 @@ resource "aws_instance" "bitwarden_server" {
     systemctl enable --now docker
     # Dossier persistant
     mkdir -p /bw-data
-    # Lancer Vaultwarden sur port 8000
+    # Lancer Vaultwarden sur port 8000, publié seulement sur 127.0.0.1 :
+    # seul Caddy (même machine) doit l'atteindre, et Docker contourne les règles UFW
     docker run -d \
       --name vaultwarden \
+      --restart unless-stopped \
       -v /bw-data/:/data/ \
       -e ROCKET_PORT=8000 \
-      -p 8000:8000 \
+      -p 127.0.0.1:8000:8000 \
       ${var.vaultwarden_image}
     # Caddy pour HTTPS auto
     apt install -y debian-keyring debian-archive-keyring apt-transport-https
