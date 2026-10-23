@@ -147,7 +147,7 @@ resource "aws_eip" "bitwarden_eip" {
 # Instance EC2
 resource "aws_instance" "bitwarden_server" {
   ami                         = data.aws_ami.ubuntu.id
-  instance_type               = "t2.micro"
+  instance_type               = var.instance_type
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.bitwarden_sg.id]
   associate_public_ip_address = true
@@ -199,7 +199,7 @@ resource "aws_instance" "bitwarden_server" {
       -v /bw-data/:/data/ \
       -e ROCKET_PORT=8000 \
       -p 8000:8000 \
-      vaultwarden/server:latest
+      ${var.vaultwarden_image}
     # Caddy pour HTTPS auto
     apt install -y debian-keyring debian-archive-keyring apt-transport-https
     curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg

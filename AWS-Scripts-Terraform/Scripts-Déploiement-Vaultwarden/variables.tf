@@ -12,6 +12,18 @@ variable "domain_name" {
   type        = string
 }
 
+variable "instance_type" {
+  description = "Type d'instance EC2 qui héberge Docker, Caddy et Vaultwarden"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "vaultwarden_image" {
+  description = "Image Docker de Vaultwarden, épinglée à une version précise (jamais :latest) pour des déploiements reproductibles"
+  type        = string
+  default     = "vaultwarden/server:1.37.4"
+}
+
 variable "allowed_ssh_cidr" {
   description = "Plage CIDR autorisée à se connecter en SSH (port 22), idéalement votre seule adresse publique en /32 (ex: 203.0.113.10/32)"
   type        = string
