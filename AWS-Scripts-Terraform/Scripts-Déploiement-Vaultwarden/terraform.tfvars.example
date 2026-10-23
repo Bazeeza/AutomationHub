@@ -24,6 +24,11 @@ vaultwarden_image = "vaultwarden/server:1.37.4"
 # Required - no default.
 domain_name = "vault.example.duckdns.org"
 
+# Name of an existing EC2 key pair in the same region (EC2 > Key Pairs).
+# Without it the instance has no SSH key: administration is then impossible over SSH.
+# Optional - default: null
+# ssh_key_name = "my-key-pair"
+
 # CIDR range allowed to reach SSH (port 22). Use your own public address as a /32
 # (for example from `curl -4 ifconfig.me`). 0.0.0.0/0 is rejected by validation.
 # The value below is a documentation address (RFC 5737): replace it.
