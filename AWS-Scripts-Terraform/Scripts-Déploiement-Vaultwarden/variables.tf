@@ -1,5 +1,6 @@
-#variables.tf
-
+# variables.tf
+# Toutes les entrées du module, avec type et description. Valeurs à fournir dans
+# terraform.tfvars (voir terraform.tfvars.example).
 
 variable "aws_region" {
   description = "Région AWS où déployer l'infrastructure (la zone utilisée est <région>a)"
