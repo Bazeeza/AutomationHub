@@ -169,9 +169,9 @@ resource "aws_instance" "bitwarden_server" {
   }
 
   tags = {
-    Name        = "Vaultwarden-Server"
-    Project     = "TP3-Bitwarden"
-    ManagedBy   = "terraform"
+    Name      = "Vaultwarden-Server"
+    Project   = "TP3-Bitwarden"
+    ManagedBy = "terraform"
   }
 
   # Script d'installation automatique (Avec UFW allow pour fix timeouts, et Caddy avec redirect HTTP->HTTPS)
