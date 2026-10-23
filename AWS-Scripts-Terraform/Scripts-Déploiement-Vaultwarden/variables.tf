@@ -25,6 +25,12 @@ variable "vaultwarden_image" {
   default     = "vaultwarden/server:1.37.4"
 }
 
+variable "ssh_key_name" {
+  description = "Nom d'une paire de clés EC2 existante dans la région (null = aucune clé, donc aucune connexion SSH possible)"
+  type        = string
+  default     = null
+}
+
 variable "allowed_ssh_cidr" {
   description = "Plage CIDR autorisée à se connecter en SSH (port 22), idéalement votre seule adresse publique en /32 (ex: 203.0.113.10/32)"
   type        = string
