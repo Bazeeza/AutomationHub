@@ -116,13 +116,14 @@ resource "aws_security_group_rule" "ingress_https" {
   security_group_id = aws_security_group.bitwarden_sg.id
 }
 
-# SSH Temporaire (Limité à ton IP pour sécurité – Change 0.0.0.0/0 si tu as ton IP)
+# SSH limité à la plage var.allowed_ssh_cidr (moindre accès réseau : jamais 0.0.0.0/0)
 resource "aws_security_group_rule" "ingress_ssh" {
   type              = "ingress"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.allowed_ssh_cidr]
+  description       = "SSH admin from allowed_ssh_cidr only"
   security_group_id = aws_security_group.bitwarden_sg.id
 }
 
