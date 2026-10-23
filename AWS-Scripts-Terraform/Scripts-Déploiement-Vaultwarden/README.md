@@ -7,9 +7,20 @@
 | Fichier | Rôle |
 |---|---|
 | [`versions.tf`](versions.tf) | Version minimale de Terraform, fournisseur `hashicorp/aws` (~> 5.0) et région du fournisseur |
-| [`variables.tf`](variables.tf) | Variables d'entrée : `aws_region` (défaut `us-east-1`) et `domain_name` (obligatoire) |
-| [`main.tf`](main.tf) | Ressources : AMI Ubuntu 22.04, VPC, sous-réseau public, passerelle Internet, table de routage, ACL réseau, groupe de sécurité, instance EC2 avec script d'installation, Elastic IP |
-| [`outputs.tf`](outputs.tf) | Sorties : IP publique (Elastic IP), URL HTTPS, ID de l'instance |
+| [`variables.tf`](variables.tf) | Variables d'entrée (voir le tableau ci-dessous) |
+| [`main.tf`](main.tf) | Ressources : AMI Ubuntu 22.04, VPC, sous-réseau public, passerelle Internet, table de routage, ACL réseau, groupe de sécurité, instance EC2 (IMDSv2, volume chiffré) avec script d'installation, Elastic IP |
+| [`outputs.tf`](outputs.tf) | Sorties : IP publique (Elastic IP), URL HTTPS, ID de l'instance, commande SSH |
+
+| Variable | Obligatoire | Défaut | Rôle |
+|---|---|---|---|
+| `aws_region` | Non | `us-east-1` | Région AWS ; le sous-réseau est placé dans la zone `<région>a` |
+| `domain_name` | **Oui** | — | Nom de domaine servi par Caddy, qui doit pointer vers l'Elastic IP |
+| `allowed_ssh_cidr` | **Oui** | — | Seule plage autorisée sur le port 22 (votre adresse en `/32`) ; `0.0.0.0/0` est refusé |
+| `ssh_key_name` | Non | `null` | Paire de clés EC2 existante ; sans elle, aucune connexion SSH |
+| `instance_type` | Non | `t2.micro` | Taille de l'instance EC2 |
+| `vaultwarden_image` | Non | `vaultwarden/server:1.37.4` | Image Docker épinglée à une version précise |
+
+Les raisons de chaque choix de sécurité sont expliquées dans le [README du dépôt](../../README.md#sécurité).
 | [`terraform.tfvars.example`](terraform.tfvars.example) | Exemple de valeurs à copier dans `terraform.tfvars` (fichier exclu du dépôt) |
 
 ---
@@ -77,8 +88,8 @@ flowchart TB
             igw["Internet Gateway bitwarden-igw"]
             rt["Table de routage bitwarden-public-rt : 0.0.0.0/0 vers IGW"]
             subgraph subnet["Sous-réseau public 10.0.1.0/24 - zone var.aws_region + a"]
-                sg["Groupe de sécurité bitwarden-sg : entrée TCP 22, 80, 443"]
-                subgraph ec2["EC2 Ubuntu 22.04 - t2.micro"]
+                sg["Groupe de sécurité bitwarden-sg : TCP 80, 443 publics ; TCP 22 depuis allowed_ssh_cidr"]
+                subgraph ec2["EC2 Ubuntu 22.04 - var.instance_type, IMDSv2, EBS chiffré"]
                     caddy["Caddy : HTTPS automatique, redirection HTTP vers HTTPS"]
                     docker["Docker"]
                     vw["Conteneur vaultwarden/server : port 8000, volume /bw-data"]
@@ -208,7 +219,7 @@ mkdir ~/terraform
 ![Capture 10](https://i.postimg.cc/m24vTX6J/Screenshot-2025-11-18-at-6-30-10-PM.png)  
 ---
 
-**Renseigner les variables** : copier l'exemple puis remplacer `domain_name` par votre nom de domaine. Le fichier `terraform.tfvars` est exclu du dépôt par le `.gitignore`.
+**Renseigner les variables** : copier l'exemple puis remplacer `domain_name` par votre nom de domaine et `allowed_ssh_cidr` par votre adresse publique en `/32` (ajoutez `ssh_key_name` si vous voulez vous connecter en SSH). Le fichier `terraform.tfvars` est exclu du dépôt par le `.gitignore`.
 ```
 cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars
@@ -267,7 +278,7 @@ Terraform va alors :
 
 **ATTENTION!**
 **ATTENTION!**
-**La commande DESTROY détruire et supprime l’infrastructure créer**
+**La commande DESTROY détruire et supprime l’infrastructure créer** (le coffre Vaultwarden compris : voir [Coûts et démontage](../../README.md#coûts-et-démontage))
 
 ```
 terraform destroy
@@ -280,6 +291,8 @@ terraform destroy
 
 > [!NOTE]
 > Les identifiants AWS (`vpc-…`, `subnet-…`, `sg-…`, `i-…`), l'adresse IP publique et le nom de domaine du laboratoire ont été remplacés par des valeurs génériques entre `< >`. Ces valeurs ne servent qu'à un déploiement donné : chaque nouveau déploiement produit ses propres valeurs (voir les sorties `terraform output`).
+>
+> Cette phase décrit le déploiement tel qu'il a été testé pendant le TP : le port 22 était alors ouvert à tous. Le code actuel limite SSH à `allowed_ssh_cidr`, exige IMDSv2 et chiffre le volume ; ces changements n'ont pas encore été redéployés pour de nouvelles captures.
 
 **Configuration du VPC**
 
