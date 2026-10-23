@@ -9,8 +9,28 @@
 # Optional - default: "us-east-1"
 aws_region = "us-east-1"
 
+# EC2 instance type (t2.micro is the size used during the lab).
+# Optional - default: "t2.micro"
+instance_type = "t2.micro"
+
+# Vaultwarden Docker image, pinned to a release tag instead of :latest.
+# Check https://github.com/dani-garcia/vaultwarden/releases before upgrading.
+# Optional - default: "vaultwarden/server:1.37.4"
+vaultwarden_image = "vaultwarden/server:1.37.4"
+
 # Fully qualified domain name served by Caddy (automatic HTTPS certificate).
 # Create the DNS record (for example on DuckDNS) and point it to the Elastic IP
 # shown in the bitwarden_public_ip output after `terraform apply`.
 # Required - no default.
 domain_name = "vault.example.duckdns.org"
+
+# Name of an existing EC2 key pair in the same region (EC2 > Key Pairs).
+# Without it the instance has no SSH key: administration is then impossible over SSH.
+# Optional - default: null
+# ssh_key_name = "my-key-pair"
+
+# CIDR range allowed to reach SSH (port 22). Use your own public address as a /32
+# (for example from `curl -4 ifconfig.me`). 0.0.0.0/0 is rejected by validation.
+# The value below is a documentation address (RFC 5737): replace it.
+# Required - no default.
+allowed_ssh_cidr = "203.0.113.10/32"

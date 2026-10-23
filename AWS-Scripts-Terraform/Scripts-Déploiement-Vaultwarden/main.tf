@@ -116,13 +116,14 @@ resource "aws_security_group_rule" "ingress_https" {
   security_group_id = aws_security_group.bitwarden_sg.id
 }
 
-# SSH Temporaire (Limité à ton IP pour sécurité – Change 0.0.0.0/0 si tu as ton IP)
+# SSH limité à la plage var.allowed_ssh_cidr (moindre accès réseau : jamais 0.0.0.0/0)
 resource "aws_security_group_rule" "ingress_ssh" {
   type              = "ingress"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.allowed_ssh_cidr]
+  description       = "SSH admin from allowed_ssh_cidr only"
   security_group_id = aws_security_group.bitwarden_sg.id
 }
 
@@ -146,15 +147,32 @@ resource "aws_eip" "bitwarden_eip" {
 # Instance EC2
 resource "aws_instance" "bitwarden_server" {
   ami                         = data.aws_ami.ubuntu.id
-  instance_type               = "t2.micro"
+  instance_type               = var.instance_type
+  key_name                    = var.ssh_key_name
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.bitwarden_sg.id]
   associate_public_ip_address = true
 
+  # IMDSv2 obligatoire : le service de métadonnées exige un jeton de session (PUT),
+  # ce qui bloque les attaques SSRF qui lisent http://169.254.169.254 par un simple GET.
+  # hop_limit = 1 : les conteneurs Docker (un saut réseau de plus) ne peuvent pas l'atteindre.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
+  # Volume racine chiffré au repos (clé gérée par AWS, aws/ebs) : il contient /bw-data,
+  # donc la base de données du coffre Vaultwarden.
+  root_block_device {
+    encrypted             = true
+    delete_on_termination = true
+  }
+
   tags = {
-    Name        = "Vaultwarden-Server"
-    Project     = "TP3-Bitwarden"
-    ManagedBy   = "terraform"
+    Name      = "Vaultwarden-Server"
+    Project   = "TP3-Bitwarden"
+    ManagedBy = "terraform"
   }
 
   # Script d'installation automatique (Avec UFW allow pour fix timeouts, et Caddy avec redirect HTTP->HTTPS)
@@ -176,13 +194,15 @@ resource "aws_instance" "bitwarden_server" {
     systemctl enable --now docker
     # Dossier persistant
     mkdir -p /bw-data
-    # Lancer Vaultwarden sur port 8000
+    # Lancer Vaultwarden sur port 8000, publié seulement sur 127.0.0.1 :
+    # seul Caddy (même machine) doit l'atteindre, et Docker contourne les règles UFW
     docker run -d \
       --name vaultwarden \
+      --restart unless-stopped \
       -v /bw-data/:/data/ \
       -e ROCKET_PORT=8000 \
-      -p 8000:8000 \
-      vaultwarden/server:latest
+      -p 127.0.0.1:8000:8000 \
+      ${var.vaultwarden_image}
     # Caddy pour HTTPS auto
     apt install -y debian-keyring debian-archive-keyring apt-transport-https
     curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
