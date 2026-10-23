@@ -127,7 +127,42 @@ terraform output
 
 Faites ensuite pointer `domain_name` vers l'IP affichée par `bitwarden_public_ip` : Caddy obtient alors le certificat HTTPS automatiquement.
 
-**Nettoyage :** `terraform destroy` supprime toutes les ressources créées (dont l'Elastic IP, facturée tant qu'elle existe).
+Une fois le laboratoire terminé, suivez la section [Coûts et démontage](#coûts-et-démontage).
+
+---
+
+## Coûts et démontage
+
+Ce que ce déploiement fait facturer par AWS tant qu'il existe :
+
+| Ressource | Facturation |
+|---|---|
+| Instance EC2 (`instance_type`, `t2.micro` par défaut) | À l'heure, tant que l'instance tourne (sauf crédits ou offre gratuite du compte) |
+| Volume EBS racine | Au Go par mois, **même si l'instance est arrêtée** |
+| Elastic IP | Toute adresse IPv4 publique est facturée à l'heure depuis février 2024, qu'elle soit attachée ou non |
+| VPC, sous-réseau, passerelle Internet, groupe de sécurité | Aucun coût direct |
+
+Arrêter l'instance ne suffit donc pas : le volume et l'Elastic IP continuent de coûter. Pour tout supprimer :
+
+```bash
+cd AutomationHub/AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden
+
+# 1. Voir ce qui sera détruit (aucune modification)
+terraform plan -destroy
+
+# 2. Détruire toutes les ressources gérées par l'état local
+terraform destroy
+
+# 3. Vérifier qu'il ne reste rien dans l'état
+terraform state list
+```
+
+> [!WARNING]
+> `terraform destroy` supprime aussi le volume EBS (`delete_on_termination = true`), donc **le coffre Vaultwarden et tous les mots de passe qu'il contient**. Exportez le coffre depuis le client Bitwarden avant de détruire.
+
+Après le démontage : supprimez l'enregistrement DNS (par exemple le sous-domaine DuckDNS) qui pointait vers l'ancienne Elastic IP, car cette adresse sera réattribuée à un autre client AWS.
+
+Références : [Tarifs Amazon VPC, adresses IPv4 publiques](https://aws.amazon.com/vpc/pricing/) · [Tarifs Amazon EBS](https://aws.amazon.com/ebs/pricing/) · [`terraform destroy`](https://developer.hashicorp.com/terraform/cli/commands/destroy)
 
 ---
 
