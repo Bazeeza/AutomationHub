@@ -14,3 +14,9 @@ aws_region = "us-east-1"
 # shown in the bitwarden_public_ip output after `terraform apply`.
 # Required - no default.
 domain_name = "vault.example.duckdns.org"
+
+# CIDR range allowed to reach SSH (port 22). Use your own public address as a /32
+# (for example from `curl -4 ifconfig.me`). 0.0.0.0/0 is rejected by validation.
+# The value below is a documentation address (RFC 5737): replace it.
+# Required - no default.
+allowed_ssh_cidr = "203.0.113.10/32"
