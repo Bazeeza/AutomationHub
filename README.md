@@ -4,12 +4,14 @@
 ![AWS provider](https://img.shields.io/badge/AWS_provider-~%3E5.0-ffb454?logo=amazonwebservices&logoColor=white&labelColor=070d1c)
 ![Docker](https://img.shields.io/badge/Docker-Vaultwarden-2b9dff?logo=docker&logoColor=white&labelColor=070d1c)
 ![HTTPS](https://img.shields.io/badge/HTTPS-Caddy-3fe0a0?logo=caddy&logoColor=white&labelColor=070d1c)
+[![Terraform CI](https://github.com/Bazeeza/AutomationHub/actions/workflows/terraform.yml/badge.svg)](https://github.com/Bazeeza/AutomationHub/actions/workflows/terraform.yml)
+[![Markdown links](https://github.com/Bazeeza/AutomationHub/actions/workflows/links.yml/badge.svg)](https://github.com/Bazeeza/AutomationHub/actions/workflows/links.yml)
 
 ## Summary (English)
 
 AutomationHub is a college infrastructure-as-code project: one `terraform apply` builds a small AWS network (VPC, public subnet, Internet Gateway, security group), launches an Ubuntu EC2 instance with a fixed Elastic IP, and installs **Vaultwarden** (a lightweight Bitwarden-compatible password manager) in Docker behind **Caddy** for automatic HTTPS. The working configuration and the step-by-step lab guide (in French) are in [`AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden/`](AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden/).
 
-**Skills shown:** Terraform (providers, variables, outputs), AWS networking (VPC, routing, security groups, Elastic IP), cloud-init style provisioning with `user_data`, Docker, reverse proxy and TLS, secret hygiene in git (`.gitignore`, `tfvars.example`).
+**Skills shown:** Terraform (providers, validated variables, outputs), AWS networking (VPC, routing, security groups, Elastic IP), EC2 hardening (SSH restricted to one CIDR, IMDSv2, encrypted EBS), cloud-init style provisioning with `user_data`, Docker, reverse proxy and TLS, CI with GitHub Actions (`terraform fmt`, `validate`, link check), secret hygiene in git (`.gitignore`, `tfvars.example`).
 
 ---
 
@@ -34,7 +36,7 @@ flowchart LR
     subgraph vpc["VPC 10.0.0.0/16"]
         igw["Internet Gateway"]
         subgraph subnet["Sous-réseau public 10.0.1.0/24"]
-            sg["Groupe de sécurité : 22, 80, 443"]
+            sg["Groupe de sécurité : 80, 443 publics ; 22 depuis allowed_ssh_cidr"]
             subgraph ec2["EC2 Ubuntu 22.04"]
                 caddy["Caddy HTTPS"] --> vw["Docker : Vaultwarden"]
             end
@@ -60,6 +62,9 @@ Le schéma détaillé (table de routage, ports, volume) est dans le [guide Vault
 
 ```
 AutomationHub/
+├── .github/workflows/
+│   ├── links.yml                       # CI : liens relatifs des fichiers Markdown
+│   └── terraform.yml                   # CI : terraform fmt -check, init, validate
 ├── .gitignore                          # Exclut *.tfstate, *.tfvars, .terraform/
 ├── README.md
 ├── AWS-Scripts-Terraform/
@@ -69,9 +74,9 @@ AutomationHub/
 │   └── Scripts-Déploiement-Vaultwarden/
 │       ├── README.md                   # Guide pas à pas du TP (français)
 │       ├── main.tf                     # VPC, sous-réseau, SG, EC2 + user_data, Elastic IP
-│       ├── outputs.tf                  # IP publique, URL, ID d'instance
+│       ├── outputs.tf                  # IP publique, URL, ID d'instance, commande SSH
 │       ├── terraform.tfvars.example    # Valeurs d'exemple à copier
-│       ├── variables.tf                # aws_region, domain_name
+│       ├── variables.tf                # Région, domaine, type d'instance, image, SSH
 │       └── versions.tf                 # Terraform >= 1.0, fournisseur AWS ~> 5.0
 └── DOCKER-Scripts-Terraform/           # Réservé : README seulement
     └── README.md
@@ -107,7 +112,8 @@ Vaultwarden est un gestionnaire de mots de passe auto-hébergé, compatible avec
 git clone https://github.com/Bazeeza/AutomationHub.git
 cd AutomationHub/AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden
 
-# 2. Renseigner les variables (fichier exclu du dépôt)
+# 2. Renseigner les variables (fichier exclu du dépôt) :
+#    domain_name et allowed_ssh_cidr (votre adresse publique en /32) sont obligatoires
 cp terraform.tfvars.example terraform.tfvars
 
 # 3. Initialiser, vérifier le plan, appliquer
@@ -121,7 +127,42 @@ terraform output
 
 Faites ensuite pointer `domain_name` vers l'IP affichée par `bitwarden_public_ip` : Caddy obtient alors le certificat HTTPS automatiquement.
 
-**Nettoyage :** `terraform destroy` supprime toutes les ressources créées (dont l'Elastic IP, facturée tant qu'elle existe).
+Une fois le laboratoire terminé, suivez la section [Coûts et démontage](#coûts-et-démontage).
+
+---
+
+## Coûts et démontage
+
+Ce que ce déploiement fait facturer par AWS tant qu'il existe :
+
+| Ressource | Facturation |
+|---|---|
+| Instance EC2 (`instance_type`, `t2.micro` par défaut) | À l'heure, tant que l'instance tourne (sauf crédits ou offre gratuite du compte) |
+| Volume EBS racine | Au Go par mois, **même si l'instance est arrêtée** |
+| Elastic IP | Toute adresse IPv4 publique est facturée à l'heure depuis février 2024, qu'elle soit attachée ou non |
+| VPC, sous-réseau, passerelle Internet, groupe de sécurité | Aucun coût direct |
+
+Arrêter l'instance ne suffit donc pas : le volume et l'Elastic IP continuent de coûter. Pour tout supprimer :
+
+```bash
+cd AutomationHub/AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden
+
+# 1. Voir ce qui sera détruit (aucune modification)
+terraform plan -destroy
+
+# 2. Détruire toutes les ressources gérées par l'état local
+terraform destroy
+
+# 3. Vérifier qu'il ne reste rien dans l'état
+terraform state list
+```
+
+> [!WARNING]
+> `terraform destroy` supprime aussi le volume EBS (`delete_on_termination = true`), donc **le coffre Vaultwarden et tous les mots de passe qu'il contient**. Exportez le coffre depuis le client Bitwarden avant de détruire.
+
+Après le démontage : supprimez l'enregistrement DNS (par exemple le sous-domaine DuckDNS) qui pointait vers l'ancienne Elastic IP, car cette adresse sera réattribuée à un autre client AWS.
+
+Références : [Tarifs Amazon VPC, adresses IPv4 publiques](https://aws.amazon.com/vpc/pricing/) · [Tarifs Amazon EBS](https://aws.amazon.com/ebs/pricing/) · [`terraform destroy`](https://developer.hashicorp.com/terraform/cli/commands/destroy)
 
 ---
 
@@ -133,8 +174,23 @@ Faites ensuite pointer `domain_name` vers l'IP affichée par `bitwarden_public_i
 > - `terraform.tfvars` et les fichiers d'état `*.tfstate` sont exclus par le [`.gitignore`](.gitignore) : l'état contient les ID de ressources, les IP et parfois des secrets en clair.
 > - Les identifiants AWS restent dans `~/.aws/credentials` ou dans des variables d'environnement.
 
-> [!WARNING]
-> Dans la version actuelle, le port SSH (22) est ouvert à `0.0.0.0/0` dans le groupe de sécurité. C'était acceptable pour un laboratoire de courte durée ; à restreindre à votre propre adresse avant tout usage réel.
+Choix de sécurité appliqués dans [`main.tf`](AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden/main.tf) :
+
+| Mesure | Code | Pourquoi |
+|---|---|---|
+| **SSH limité** | `cidr_blocks = [var.allowed_ssh_cidr]` | Moindre accès réseau : seul le poste d'administration (idéalement une adresse en `/32`) peut tenter une connexion SSH. Une validation refuse `0.0.0.0/0`, qui exposerait le port 22 aux robots de force brute d'Internet. |
+| **Web public** | Ports 80 et 443 ouverts à `0.0.0.0/0` | Nécessaire : les clients Bitwarden doivent joindre le service, et Let's Encrypt doit joindre Caddy pour délivrer le certificat. Le port 80 ne fait que rediriger vers HTTPS. |
+| **IMDSv2 obligatoire** | `metadata_options { http_tokens = "required" }` | Le service de métadonnées (`169.254.169.254`) n'accepte plus que des requêtes avec un jeton de session obtenu par `PUT`. Une faille SSRF dans une application web, qui ne peut faire que des `GET`, ne peut donc plus lire les métadonnées de l'instance. |
+| **Limite de sauts = 1** | `http_put_response_hop_limit = 1` | Le jeton IMDSv2 ne traverse pas le pont réseau Docker : le conteneur Vaultwarden, qui n'en a pas besoin, ne peut pas interroger les métadonnées. |
+| **Volume chiffré** | `root_block_device { encrypted = true }` | Le disque contient `/bw-data`, la base du coffre de mots de passe. Il est chiffré au repos avec la clé gérée par AWS (`aws/ebs`), ainsi que ses instantanés. |
+| **Conteneur en local seulement** | `-p 127.0.0.1:8000:8000` | Vaultwarden n'écoute que sur la boucle locale : seul Caddy, sur la même instance, peut le joindre. Docker écrit ses propres règles iptables et contourne UFW, d'où l'importance de ne pas publier le port sur toutes les interfaces. |
+| **Image épinglée** | `vaultwarden_image = "vaultwarden/server:1.37.4"` | Avec `:latest`, deux déploiements du même code peuvent installer des versions différentes. Une version fixe rend le déploiement reproductible ; la mise à jour devient un changement volontaire et traçable. |
+| **Clé SSH optionnelle** | `key_name = var.ssh_key_name` | Par défaut (`null`), aucune clé n'est installée et aucune connexion SSH n'est possible : la surface d'attaque est minimale tant qu'on n'a pas besoin d'administrer l'instance. |
+
+> [!NOTE]
+> Limites connues, laissées telles quelles pour rester fidèle au TP : l'ACL réseau du sous-réseau autorise tout le trafic (le filtrage repose sur le groupe de sécurité, qui est *stateful*), et le pare-feu UFW de l'instance n'est pas activé par le `user_data` (ses règles `ufw allow` n'ont donc pas d'effet).
+>
+> Références : [IMDSv2 (AWS)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html) · [Chiffrement EBS (AWS)](https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption.html) · [`aws_instance` (registre Terraform)](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance)
 
 ---
 
