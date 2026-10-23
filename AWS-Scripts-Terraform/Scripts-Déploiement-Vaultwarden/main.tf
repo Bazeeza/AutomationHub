@@ -152,6 +152,15 @@ resource "aws_instance" "bitwarden_server" {
   vpc_security_group_ids      = [aws_security_group.bitwarden_sg.id]
   associate_public_ip_address = true
 
+  # IMDSv2 obligatoire : le service de métadonnées exige un jeton de session (PUT),
+  # ce qui bloque les attaques SSRF qui lisent http://169.254.169.254 par un simple GET.
+  # hop_limit = 1 : les conteneurs Docker (un saut réseau de plus) ne peuvent pas l'atteindre.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   tags = {
     Name        = "Vaultwarden-Server"
     Project     = "TP3-Bitwarden"
