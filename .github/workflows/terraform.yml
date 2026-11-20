@@ -20,7 +20,7 @@ jobs:
       # v5 and later run on Node.js 24; v4 targets Node.js 20, deprecated on the runners
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
 
       - name: Check formatting
         run: terraform fmt -check -recursive -diff
