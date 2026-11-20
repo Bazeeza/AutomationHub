@@ -17,14 +17,14 @@ AutomationHub is a college infrastructure-as-code project: one `terraform apply`
 
 ## Version française
 
-Déploiement automatisé d'un serveur **Vaultwarden** sur AWS avec **Terraform** et **Docker**, réalisé en équipe dans le cadre du DEC en Techniques de l'informatique (réseautique) au Collège de Rosemont.
+Déploiement automatisé d'un serveur **Vaultwarden** sur AWS avec **Terraform** et **Docker**, réalisé en équipe dans le cadre du DEC en Techniques de l'informatique (réseautique).
 
 | Élément | Contenu |
 |---|---|
 | **Objet** | Guide de déploiement d'un serveur **Vaultwarden** (gestionnaire de mots de passe compatible Bitwarden, écrit en Rust) hébergé sur AWS |
 | **Équipe** | bazeeza · Abdul-Majid · Aran |
 | **Objectif** | Documenter le déploiement complet du serveur Vaultwarden sur AWS au moyen de scripts Terraform, puis présenter les résultats obtenus |
-| **Cadre** | DEC en Techniques de l'informatique (réseautique), Collège de Rosemont |
+| **Cadre** | DEC en Techniques de l'informatique (réseautique) |
 
 ---
 
@@ -202,5 +202,5 @@ Choix de sécurité appliqués dans [`main.tf`](AWS-Scripts-Terraform/Scripts-D�
 
 ## Auteur
 
-**bazeeza** — finissant du DEC Techniques de l'informatique (réseautique), Collège de Rosemont · Montréal, QC
+**bazeeza** — finissant du DEC Techniques de l'informatique (réseautique) · Montréal, QC
 GitHub : [@Bazeeza](https://github.com/Bazeeza) · Contact : info@bazeeza.ca
