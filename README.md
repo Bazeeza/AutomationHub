@@ -17,7 +17,7 @@ AutomationHub is a college infrastructure-as-code project: one `terraform apply`
 
 ## Version française
 
-Déploiement automatisé d'un serveur **Vaultwarden** sur AWS avec **Terraform** et **Docker**, réalisé en équipe dans le cadre du DEC en Techniques de l'informatique (réseautique) au .
+Déploiement automatisé d'un serveur **Vaultwarden** sur AWS avec **Terraform** et **Docker**, réalisé en équipe dans le cadre du DEC en Techniques de l'informatique (réseautique).
 
 | Élément | Contenu |
 |---|---|
