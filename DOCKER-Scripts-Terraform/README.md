@@ -1,5 +1,8 @@
 # DOCKER-Scripts-Terraform
 
+[![Français](https://img.shields.io/badge/Langue-Français-3fe0a0?style=for-the-badge)](README.md)
+[![English](https://img.shields.io/badge/Language-English-2b9dff?style=for-the-badge)](README.en.md)
+
 > [!NOTE]
 > **EN —** Placeholder folder: it contains no script yet. In the current project, Docker and the Vaultwarden container are installed by the EC2 `user_data` script in [`main.tf`](../AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden/main.tf), not by a separate Terraform configuration.
 >

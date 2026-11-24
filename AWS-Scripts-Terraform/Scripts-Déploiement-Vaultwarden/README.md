@@ -1,5 +1,8 @@
 # Scripts-Déploiement-Vaultwarden
 
+[![Français](https://img.shields.io/badge/Langue-Français-3fe0a0?style=for-the-badge)](README.md)
+[![English](https://img.shields.io/badge/Language-English-2b9dff?style=for-the-badge)](README.en.md)
+
 > **EN —** Terraform configuration that builds a VPC, a public subnet, a security group, an Ubuntu EC2 instance and an Elastic IP on AWS, then installs Docker, Vaultwarden and Caddy (automatic HTTPS) through `user_data`. The step-by-step guide below is in French.
 
 ## Contenu du dossier
@@ -10,6 +13,7 @@
 | [`variables.tf`](variables.tf) | Variables d'entrée (voir le tableau ci-dessous) |
 | [`main.tf`](main.tf) | Ressources : AMI Ubuntu 22.04, VPC, sous-réseau public, passerelle Internet, table de routage, ACL réseau, groupe de sécurité, instance EC2 (IMDSv2, volume chiffré) avec script d'installation, Elastic IP |
 | [`outputs.tf`](outputs.tf) | Sorties : IP publique (Elastic IP), URL HTTPS, ID de l'instance, commande SSH |
+| [`terraform.tfvars.example`](terraform.tfvars.example) | Exemple de valeurs à copier dans `terraform.tfvars` (fichier exclu du dépôt) |
 
 | Variable | Obligatoire | Défaut | Rôle |
 |---|---|---|---|
@@ -21,7 +25,6 @@
 | `vaultwarden_image` | Non | `vaultwarden/server:1.37.4` | Image Docker épinglée à une version précise |
 
 Les raisons de chaque choix de sécurité sont expliquées dans le [README du dépôt](../../README.md#sécurité).
-| [`terraform.tfvars.example`](terraform.tfvars.example) | Exemple de valeurs à copier dans `terraform.tfvars` (fichier exclu du dépôt) |
 
 ---
 
