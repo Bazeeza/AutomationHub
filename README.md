@@ -74,20 +74,25 @@ AutomationHub/
 │   ├── links.yml                       # CI : liens relatifs des fichiers Markdown
 │   └── terraform.yml                   # CI : terraform fmt -check, init, validate
 ├── .gitignore                          # Exclut *.tfstate, *.tfvars, .terraform/
-├── README.md
+├── README.md                           # Version française (ce fichier)
+├── README.en.md                        # Version anglaise
 ├── AWS-Scripts-Terraform/
 │   ├── README.md
+│   ├── README.en.md
 │   ├── Scripts-Déploiement-MMA/        # Réservé : README seulement
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── README.en.md
 │   └── Scripts-Déploiement-Vaultwarden/
 │       ├── README.md                   # Guide pas à pas du TP (français)
+│       ├── README.en.md                # Guide pas à pas du TP (anglais)
 │       ├── main.tf                     # VPC, sous-réseau, SG, EC2 + user_data, Elastic IP
 │       ├── outputs.tf                  # IP publique, URL, ID d'instance, commande SSH
 │       ├── terraform.tfvars.example    # Valeurs d'exemple à copier
 │       ├── variables.tf                # Région, domaine, type d'instance, image, SSH
 │       └── versions.tf                 # Terraform >= 1.0, fournisseur AWS ~> 5.0
 └── DOCKER-Scripts-Terraform/           # Réservé : README seulement
-    └── README.md
+    ├── README.md
+    └── README.en.md
 ```
 
 | Dossier | Rôle réel |
