@@ -1,5 +1,8 @@
 # AutomationHub
 
+[![Français](https://img.shields.io/badge/Langue-Français-3fe0a0?style=for-the-badge)](README.md)
+[![English](https://img.shields.io/badge/Language-English-2b9dff?style=for-the-badge)](README.en.md)
+
 ![Terraform](https://img.shields.io/badge/Terraform-%3E%3D1.0-c792ea?logo=terraform&logoColor=white&labelColor=070d1c)
 ![AWS provider](https://img.shields.io/badge/AWS_provider-~%3E5.0-ffb454?logo=amazonwebservices&logoColor=white&labelColor=070d1c)
 ![Docker](https://img.shields.io/badge/Docker-Vaultwarden-2b9dff?logo=docker&logoColor=white&labelColor=070d1c)
@@ -25,6 +28,11 @@ Déploiement automatisé d'un serveur **Vaultwarden** sur AWS avec **Terraform**
 | **Équipe** | bazeeza et deux coéquipiers |
 | **Objectif** | Documenter le déploiement complet du serveur Vaultwarden sur AWS au moyen de scripts Terraform, puis présenter les résultats obtenus |
 | **Cadre** | DEC en Techniques de l'informatique (réseautique) |
+| **Technologies** | Terraform, AWS (VPC, EC2, Elastic IP, groupes de sécurité), Docker, Caddy, Ubuntu Server 22.04, Vaultwarden, GitHub Actions |
+| **Niveau** | Intermédiaire |
+| **Contenu** | Configuration Terraform complète, guide pas à pas du TP (en français), CI GitHub Actions (`terraform fmt`, `validate`, liens) |
+| **Statut** | Terminé (TP remis) ; le code a été durci après la remise et n'a pas encore été redéployé (voir la note du guide, phase 3) |
+| **Lire en premier** | [Guide Vaultwarden](AWS-Scripts-Terraform/Scripts-Déploiement-Vaultwarden/README.md) |
 
 ---
 
